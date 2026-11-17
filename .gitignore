@@ -1,0 +1,9 @@
+.pio/
+.vscode/
+__pycache__/
+*.pyc
+sdkconfig.esp32c3
+test/cases.bin
+test/test_dsp.exe
+test/test_json.exe
+test/render_screens.exe

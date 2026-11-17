@@ -1,0 +1,16 @@
+VERIFY: OK - nets read back from the strips match netlist.py
+Board: 4 strips x 12 holes (30.5 x 10.2 mm of hole grid). Strips run along the long side; rows A..D top to bottom, holes 1..12 left to right.
+1. Cut the strips (drill a 3 mm bit one turn, or scrape with a knife) at: A9, B7, C4, C9, D7.
+2. Jumpers (bare wire on the component side): A7 to B9.
+3. Parts stand upright, one lead straight down, the other bent over the body into the second hole:
+   R1 330 ohm: C5 and D5
+   R2 10 ohm: B6 and C6
+   C1 10 uF: C8 and D8  (+ lead in D8)
+   R5 2.2 kohm: C11 and D11
+   R6 10 kohm: B10 and C10
+   R7 47 kohm: A12 and B12
+   R8 10 kohm: A4 and B4
+   C2 10 uF: A3 and B3  (+ lead in A3)
+   R3 5.6 kohm: C1 and D1
+   R4 1 kohm: B2 and C2
+4. Wires: GPIO0 -> C12, GPIO3 -> D6, GPIO4 -> C3, 3V3 -> A11, GND-board -> B1, clip+ -> C7, clip- -> B5.
