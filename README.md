@@ -1,10 +1,5 @@
 # In-circuit capacitor checker - 2-WIRE variant (ESP32-C3 0.42" OLED, no op-amp)
 
-> **Status:** DSP and UI are tested in simulation and the firmware builds, but it has not yet been validated against real capacitors. Check it on known parts before trusting a verdict (see Status below).
-
-Same idea as the 4-wire version, but only two test leads. Lead + clip-contact resistance adds to ESR, so the firmware measures the leads
-(clips shorted together) and subtracts them from every reading ("zero" calibration, like an LCR meter).
-
 ## Wiring - schematic/two_wire_front_end.png (source: schematic/draw_schematic.py)
 The drawing script reads the connections back out of the drawn geometry and fails if they differ from `schematic/netlist.py`;
 the simulation (`sim/chain_ac.py`) is built from the same netlist. Drawing = netlist = simulation.
