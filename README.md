@@ -1,5 +1,7 @@
 # In-circuit capacitor checker - 2-WIRE variant (ESP32-C3 0.42" OLED, no op-amp)
 
+> **Status:** DSP and UI are tested in simulation and the firmware builds, but it has not yet been validated against real capacitors. Check it on known parts before trusting a verdict (see Status below).
+
 Same idea as the 4-wire version, but only two test leads. Lead + clip-contact resistance adds to ESR, so the firmware measures the leads
 (clips shorted together) and subtracts them from every reading ("zero" calibration, like an LCR meter).
 
@@ -35,6 +37,14 @@ Resistors lie flat in a stack; 9 solder bridges between adjacent pads and 3 insu
 Alternative with all MCU wires on the top strip and probe pads at the right end: `stripboard/stripboard_5x14_header.png` (5 x 14, 8 jumpers,
 `BUILD_header.txt`). Electrically verified, but the long jumpers must be insulated wire on the copper side.
 Parts stand upright. Use electrolytic cans of 5 mm diameter or less, or lay them down if larger.
+
+### Test probes (3D-printed parts) - `cad/`
+Probe part for the two test leads, designed in SolidWorks (about 10 x 52.5 x 10 mm).
+* `cad/Multimeter_probes.SLDPRT` - SolidWorks source (edit this one)
+* `cad/Multimeter_probes.STL` - mesh for any slicer
+* `cad/Multimeter_probes.3mf` - Bambu Studio / OrcaSlicer project with the print settings
+
+Keep the leads short and thick (20 AWG, under 15 cm) and the contact firm: lead and contact resistance adds to ESR, and the Calibrate tab (step 2, clips shorted) only removes what is constant between calibration and use.
 
 ### Why there are no diodes (changed from the first version)
 The earlier drawing had a 5.1 V zener across the clips and two 1N5819 clamps on the ADC pin. Dropped:
@@ -82,8 +92,7 @@ Build options go in `build_flags` in `platformio.ini`: `-DOLED_SDA=8 -DOLED_SCL=
 `-DAP_SSID=\"MyName\" -DAP_PASS=\"mypassword1\"` (Wi-Fi name/password, at least 8 characters), `-DWIFI_ENABLED=0` (no Wi-Fi and no web page).
 To wipe the stored calibration and learned parts: `pio run -t erase`, then upload again (or "Erase calibration" on the web page).
 
-Problems on the very first build are likely: the ESP32 code has only been checked against stand-in headers, never compiled with the real ESP-IDF. A compiler
-error mentioning `adc_continuous`, `i2c_master`, `esp_http_server` or `esp_wifi` usually means a renamed field in your IDF version: send me the first few lines of the error.
+The firmware has been built with PlatformIO (espressif32 6.9.0, ESP-IDF 5.3.1) on Windows. If a build fails on another IDF version, a compiler error mentioning `adc_continuous`, `i2c_master`, `esp_http_server` or `esp_wifi` usually means a renamed field: send me the first few lines of the error.
 Blank OLED: wrong SDA/SCL (see above). Nothing happens on a test: check the log for "OLED init failed", and that GPIO0/3/4 match your wiring.
 
 ## Use
@@ -164,8 +173,7 @@ the noise. If your readings are noisier with Wi-Fi on, calibrate and test with i
 DSP, error bars, calibration and the verdict logic (`src/capdsp.h`, `src/capjson.h`) run on the PC against synthesised captures (`test/test_dsp.cpp`):
 calibration rejects wrong inputs, the error bars cover the true value in about 90-100 % of runs (2-sigma), borderline parts are flagged. The web page logic (`src/web_ui.h`) passes a fake-DOM smoke test.
 The probe-sensing start (`wait_connected`) is host-tested (connect, wiggle off, reconnect, timeout, cancel). Screens (`src/screens.h`) render to PNG on the PC (`test/render_screens.cpp`).
-ESP32 code (`main.cpp`, `oled.h`) is only syntax-checked against stub headers - **not built or run on hardware**: expect small ESP-IDF API fixes on first build
-(5.3+ APIs `driver/i2c_master.h`, `adc_continuous`, `esp_http_server`). Check on real parts before trusting a verdict: short clips (ESR ~ 0), a 4.7 ohm resistor,
+ESP32 code (`main.cpp`, `oled.h`) compiles with ESP-IDF 5.3.1 but has **not been validated on real capacitors**. Check on real parts before trusting a verdict: short clips (ESR ~ 0), a 4.7 ohm resistor,
 a few known-good and known-bad caps, an open clip, and the same part measured with Wi-Fi on and off.
 Default OLED offset (before SCREEN FIT) and pins: OLED_XOFF/OLED_YOFF/OLED_SDA/OLED_SCL in platformio.ini (set -DOLED_YOFF=24 by default). Build: `pio run -t upload` (uses `partitions.csv`: the Wi-Fi build needs a 1.9 MB app partition).
 Host test: `python3 test/gen_cases.py && g++ -O2 -std=c++17 -o test/test_dsp test/test_dsp.cpp && ./test/test_dsp test/cases.bin 20 1 1` (args: cases runs level(0-2) calibrate-trims(0/1); needs numpy).
